@@ -1,18 +1,18 @@
 //
-//  ViewController1.swift
+//  NewConversationViewController.swift
 //  NewMessenger
 //
-//  Created by Adilet on 02.02.2025.
+//  Created by Adilet on 04.02.2025.
 //
 
 import UIKit
 
-class ViewController1: UIViewController {
+class NewConversationViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        view.backgroundColor = .white
+        // Do any additional setup after loading the view.
     }
     
 
