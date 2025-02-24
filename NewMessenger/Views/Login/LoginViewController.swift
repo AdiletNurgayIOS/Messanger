@@ -7,6 +7,9 @@
 
 import UIKit
 import FirebaseAuth
+import GoogleSignIn
+import FirebaseCore
+ 
 
 class LoginViewController: UIViewController {
     
@@ -72,10 +75,19 @@ class LoginViewController: UIViewController {
         return button
     }()
     
+    private let googleSignInButton: GIDSignInButton = {
+        let button = GIDSignInButton()
+        return button
+    }()
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+ 
         title = "Log In"
         view.backgroundColor = .white
+        
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             title: "Register",
@@ -86,7 +98,7 @@ class LoginViewController: UIViewController {
         loginButton.addTarget(self,
                               action: #selector(loginButtonTapped),
                               for: .touchUpInside)
-        
+        googleSignInButton.addTarget(self, action: #selector(signInWithGoogle), for: .touchUpInside)
         
         emailField.delegate = self
         passwordField.delegate = self
@@ -98,6 +110,7 @@ class LoginViewController: UIViewController {
         scrollView.addSubview(emailField)
         scrollView.addSubview(passwordField)
         scrollView.addSubview(loginButton)
+        scrollView.addSubview(googleSignInButton)
         
         
     }
@@ -127,8 +140,46 @@ class LoginViewController: UIViewController {
                                    y: passwordField.bottom + 30 ,
                                    width: scrollView.width - 90,
                                    height: 52)
+        
+        googleSignInButton.frame = CGRect(x: 50,
+                                          y: loginButton.bottom + 10,
+                                          width: scrollView.width - 90,
+                                          height: 60)
     }
     
+    
+    
+    @objc private func signInWithGoogle() {
+        guard let clientID = FirebaseApp.app()?.options.clientID else {
+               print("❌ Ошибка: clientID не найден")
+               return
+           }
+
+           let config = GIDConfiguration(clientID: clientID)
+        
+        
+        GIDSignIn.sharedInstance.configuration = config
+        
+        GIDSignIn.sharedInstance.signIn(withPresenting: self) { result, error in
+            if let error = error {
+                print("Ошибка входа через гугл: \(error.localizedDescription)")
+            }
+            
+            guard let user = result?.user, let idToken = user.idToken?.tokenString else { return }
+            
+            let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: user.accessToken.tokenString)
+            
+            Auth.auth().signIn(with: credential) { authResult, error in
+                if let error = error {
+                    print("ошибка Firebase вход через google: \(error.localizedDescription)")
+                    return
+                }
+                print("успешный вход через google firebase: \(authResult?.user.email ?? "Неизвестно")")
+                
+            }
+             
+        }
+    }
     
     
     
